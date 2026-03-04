@@ -1,0 +1,2 @@
+"""FHMZ collector service package."""
+

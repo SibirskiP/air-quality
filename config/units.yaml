@@ -1,0 +1,13 @@
+canonical_unit: ug/m3
+conversion_mode: fixed_25C_1atm
+molecular_weights:
+  SO2: 64.066
+  NO2: 46.0055
+  O3: 48.0
+supported_units:
+  PM2.5: [ug/m3, mg/m3]
+  PM10: [ug/m3, mg/m3]
+  SO2: [ug/m3, mg/m3, ppb]
+  NO2: [ug/m3, mg/m3, ppb]
+  O3: [ug/m3, mg/m3, ppb]
+  CO: [mg/m3, ug/m3, ppm]

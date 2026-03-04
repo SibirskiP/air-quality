@@ -1,0 +1,4 @@
+pollutants:
+  iot: [PM2.5, PM10, NO2, SO2, O3, CO]
+  fhmz: [PM2.5, PM10, NO2, SO2, O3, CO, H2S]
+  public_api: [PM2.5, PM10, NO2, SO2, O3, CO]

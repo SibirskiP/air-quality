@@ -1,0 +1,19 @@
+thresholds:
+  PM2.5:
+    warning: 25
+    critical: 50
+  PM10:
+    warning: 50
+    critical: 90
+  NO2:
+    warning: 100
+    critical: 200
+  SO2:
+    warning: 125
+    critical: 350
+  O3:
+    warning: 120
+    critical: 180
+  CO:
+    warning: 10
+    critical: 20

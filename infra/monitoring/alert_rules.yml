@@ -1,0 +1,25 @@
+groups:
+  - name: airq-alerts
+    rules:
+      - alert: ApiHighLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[5m])) by (le)) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API p95 latency exceeds 200ms"
+      - alert: ServiceDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "A monitored service is down"
+      - alert: FhmzScrapeFailed
+        expr: increase(fhmz_scrape_runs_total{status=\"error\"}[10m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "FHMZ scraper is failing"
+

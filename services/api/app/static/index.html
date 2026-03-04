@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Air Quality Comparison UI</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --ink: #10243a;
+      --muted: #5f7288;
+      --fhmz: #1b8f6b;
+      --open: #1f5cff;
+      --delta: #d9480f;
+      --border: #dbe4ef;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(circle at top right, #dce9ff 0%, var(--bg) 45%);
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 28px auto;
+      padding: 0 16px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+    .sub {
+      margin: 0 0 20px;
+      color: var(--muted);
+    }
+    .controls, .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(16,36,58,0.08);
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+    select, input, button {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+      background: #fff;
+    }
+    button {
+      cursor: pointer;
+      background: linear-gradient(90deg, #164dcc, #3478ff);
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      margin-top: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .card { padding: 14px; }
+    .title { font-size: 18px; margin: 0 0 10px; }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .mini {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      background: #f9fbff;
+    }
+    .mini .k { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    .mini .v { font-size: 22px; font-weight: 700; }
+    .mini .t { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .fhmz { color: var(--fhmz); }
+    .openm { color: var(--open); }
+    .delta { color: var(--delta); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    th {
+      background: #eef4ff;
+      color: #27425f;
+      font-weight: 600;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge.fhmz { background: #e7f7f1; }
+    .badge.openm { background: #e8efff; }
+    .badge.delta { background: #fff0e9; }
+    .scroll { overflow-x: auto; }
+    .msg { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .toolbar select { width: auto; padding: 6px 10px; }
+    .hint { margin: 0 0 10px; color: var(--muted); font-size: 12px; }
+    @media (max-width: 900px) {
+      .controls { grid-template-columns: 1fr 1fr; }
+      .summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Air Quality Monitoring BiH</h1>
+    <p class="sub">Broj-na-broj usporedba FHMZ i Open-Meteo podataka po gradu i polutantu.</p>
+
+    <div class="controls">
+      <div>
+        <label>Grad</label>
+        <select id="city"></select>
+      </div>
+      <div>
+        <label>Polutant</label>
+        <select id="pollutant">
+          <option>PM2.5</option>
+          <option>PM10</option>
+          <option>NO2</option>
+          <option>SO2</option>
+          <option>O3</option>
+          <option>CO</option>
+        </select>
+      </div>
+      <div>
+        <label>Od</label>
+        <input id="from" type="datetime-local" />
+      </div>
+      <div>
+        <label>Do</label>
+        <input id="to" type="datetime-local" />
+      </div>
+      <div>
+        <button id="load">Osvjezi podatke</button>
+      </div>
+      <div>
+        <label>Auto refresh</label>
+        <select id="refreshSec">
+          <option value="30">30 sec</option>
+          <option value="60" selected>60 sec</option>
+          <option value="300">5 min</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label><input type="checkbox" id="autoRefresh" checked /> automatsko osvjezavanje</label>
+      <span id="lastRefresh">Zadnje osvjezavanje: -</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3 class="title">Zadnji dostupni podaci</h3>
+        <div class="summary">
+          <div class="mini">
+            <div class="k">FHMZ</div>
+            <div class="v fhmz" id="latestFhmz">-</div>
+            <div class="t" id="latestFhmzTs">-</div>
+          </div>
+          <div class="mini">
+            <div class="k">Open-Meteo</div>
+            <div class="v openm" id="latestOpen">-</div>
+            <div class="t" id="latestOpenTs">-</div>
+          </div>
+          <div class="mini">
+            <div class="k">Razlika |FHMZ - Open-Meteo|</div>
+            <div class="v delta" id="latestDelta">-</div>
+            <div class="t" id="latestDeltaTs">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="title">Usporedba po osvjezavanju (jedan pored drugog)</h3>
+        <p class="hint">Tabela se puni na svako osvjezavanje. Vrijeme je lokalno (Europe/Sarajevo) sa sekundama.</p>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Vrijeme osvjezavanja</th>
+                <th><span class="badge fhmz">FHMZ</span></th>
+                <th><span class="badge openm">Open-Meteo</span></th>
+                <th><span class="badge delta">Delta</span></th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <p class="msg" id="msg"></p>
+  </div>
+
+  <script>
+    const citySel = document.getElementById('city');
+    const polSel = document.getElementById('pollutant');
+    const fromEl = document.getElementById('from');
+    const toEl = document.getElementById('to');
+    const btn = document.getElementById('load');
+    const msg = document.getElementById('msg');
+    const rowsBody = document.getElementById('rows');
+    const autoRefreshEl = document.getElementById('autoRefresh');
+    const refreshSecEl = document.getElementById('refreshSec');
+    const lastRefreshEl = document.getElementById('lastRefresh');
+    let autoTimer = null;
+    let loading = false;
+
+    function toIsoLocal(d) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function initDates() {
+      const now = new Date();
+      const back = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      fromEl.value = toIsoLocal(back);
+      toEl.value = toIsoLocal(now);
+    }
+
+    function setLastRefresh() {
+      lastRefreshEl.textContent = `Zadnje osvjezavanje: ${new Date().toLocaleString('bs-BA', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+    }
+
+    function syncWindowToNow(hoursBack = 24) {
+      const now = new Date();
+      const back = new Date(now.getTime() - hoursBack * 60 * 60 * 1000);
+      fromEl.value = toIsoLocal(back);
+      toEl.value = toIsoLocal(now);
+    }
+
+    function fmtNum(n) {
+      if (n === null || n === undefined || Number.isNaN(Number(n))) return '-';
+      return Number(n).toFixed(1);
+    }
+
+    function fmtTs(ts) {
+      if (!ts) return '-';
+      const d = new Date(ts);
+      return d.toLocaleString('bs-BA', {
+        hour12: false,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+
+    function aggregateByHour(records) {
+      const by = {};
+      records.forEach((r) => {
+        if (r.value === null || r.value === undefined || r.value === '') return;
+        const k = r.measured_at;
+        by[k] = by[k] || { sum: 0, count: 0 };
+        by[k].sum += Number(r.value);
+        by[k].count += 1;
+      });
+      const out = {};
+      Object.entries(by).forEach(([k, v]) => {
+        out[k] = v.count ? v.sum / v.count : null;
+      });
+      return out;
+    }
+
+    function updateLatestCard(row) {
+      if (!row) {
+        document.getElementById('latestFhmz').textContent = '-';
+        document.getElementById('latestFhmzTs').textContent = '-';
+        document.getElementById('latestOpen').textContent = '-';
+        document.getElementById('latestOpenTs').textContent = '-';
+        document.getElementById('latestDelta').textContent = '-';
+        document.getElementById('latestDeltaTs').textContent = '-';
+        return;
+      }
+      document.getElementById('latestFhmz').textContent = row.fhmz_value === null ? '-' : `${fmtNum(row.fhmz_value)} ug/m3`;
+      document.getElementById('latestFhmzTs').textContent = fmtTs(row.snapshot_at);
+      document.getElementById('latestOpen').textContent = row.openmeteo_value === null ? '-' : `${fmtNum(row.openmeteo_value)} ug/m3`;
+      document.getElementById('latestOpenTs').textContent = fmtTs(row.snapshot_at);
+      document.getElementById('latestDelta').textContent = row.delta_abs === null ? '-' : `${fmtNum(row.delta_abs)} ug/m3`;
+      document.getElementById('latestDeltaTs').textContent = fmtTs(row.snapshot_at);
+    }
+
+    function renderRows(rows) {
+      rowsBody.innerHTML = rows.map((r) => `
+        <tr>
+          <td>${fmtTs(r.snapshot_at)}</td>
+          <td>${fmtNum(r.fhmz_value)}</td>
+          <td>${fmtNum(r.openmeteo_value)}</td>
+          <td>${fmtNum(r.delta_abs)}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadCities() {
+      const r = await fetch('/api/v1/cities');
+      const data = await r.json();
+      citySel.innerHTML = data.map(c => `<option value="${c.code}">${c.name} (${c.code})</option>`).join('');
+    }
+
+    async function loadData(capture = true) {
+      if (loading) return;
+      loading = true;
+      if (autoRefreshEl.checked) {
+        syncWindowToNow(24);
+      }
+      const city = citySel.value;
+      const pollutantRaw = polSel.value;
+      const pollutant = encodeURIComponent(pollutantRaw);
+      const from = new Date(fromEl.value).toISOString();
+      const to = new Date(toEl.value).toISOString();
+
+      try {
+        if (capture) {
+          await fetch('/api/v1/snapshots/capture', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              city_code: city,
+              pollutant: pollutantRaw,
+              from_ts: from,
+              to_ts: to
+            })
+          });
+        }
+
+        const snapRes = await fetch(`/api/v1/snapshots?city=${city}&pollutant=${pollutant}&limit=200`);
+        const rows = await snapRes.json();
+        if (!rows.length) {
+          rowsBody.innerHTML = '<tr><td colspan="4">Nema snapshot podataka za odabrani grad/polutant.</td></tr>';
+          updateLatestCard(null);
+          msg.textContent = 'Nema snapshot podataka. Klikni Osvjezi ili cekaj auto refresh.';
+          setLastRefresh();
+          return;
+        }
+        renderRows(rows);
+        updateLatestCard(rows[0]);
+        msg.textContent = `Ucitanje uspjesno: snapshot redova ${rows.length}.`;
+        setLastRefresh();
+      } finally {
+        loading = false;
+      }
+    }
+
+    function scheduleAutoRefresh() {
+      if (autoTimer) clearInterval(autoTimer);
+      if (!autoRefreshEl.checked) return;
+      const sec = Number(refreshSecEl.value || '60');
+      autoTimer = setInterval(loadData, sec * 1000);
+    }
+
+    btn.addEventListener('click', () => loadData(true));
+    autoRefreshEl.addEventListener('change', scheduleAutoRefresh);
+    refreshSecEl.addEventListener('change', scheduleAutoRefresh);
+    citySel.addEventListener('change', () => loadData(false));
+    polSel.addEventListener('change', () => loadData(false));
+
+    (async function boot() {
+      initDates();
+      await loadCities();
+      await loadData(true);
+      scheduleAutoRefresh();
+    })();
+  </script>
+</body>
+</html>

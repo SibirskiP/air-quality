@@ -1,0 +1,21 @@
+cities:
+  - code: BIHAC
+    name: Bihac
+    lat: 44.8169
+    lon: 15.8708
+    aliases: ["BIHAC", "BIHAC"]
+  - code: SARAJEVO
+    name: Sarajevo
+    lat: 43.8563
+    lon: 18.4131
+    aliases: ["SARAJEVO"]
+  - code: TUZLA
+    name: Tuzla
+    lat: 44.5384
+    lon: 18.6671
+    aliases: ["TUZLA"]
+  - code: ZENICA
+    name: Zenica
+    lat: 44.2034
+    lon: 17.9077
+    aliases: ["ZENICA"]

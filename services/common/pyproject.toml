@@ -1,0 +1,8 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aq-common"
+version = "0.1.0"
+dependencies = ["sqlalchemy", "PyYAML"]

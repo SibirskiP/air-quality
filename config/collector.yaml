@@ -1,0 +1,11 @@
+collectors:
+  openmeteo:
+    interval_minutes: 5
+    timeout_seconds: 20
+    retries: 3
+  fhmz:
+    interval_minutes: 5
+    timeout_seconds: 20
+    retries: 3
+processor:
+  interval_minutes: 5

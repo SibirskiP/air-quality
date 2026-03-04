@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: AirQualityDashboards
+    orgId: 1
+    folder: AirQuality
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

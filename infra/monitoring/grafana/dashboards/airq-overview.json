@@ -1,0 +1,42 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "API Requests/sec",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [{"expr": "sum(rate(api_requests_total[5m]))", "refId": "A"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "API p95 latency (s)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [{"expr": "histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[5m])) by (le))", "refId": "A"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "FHMZ rows parsed",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [{"expr": "increase(fhmz_rows_parsed_total[5m])", "refId": "A"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Processor runs",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [{"expr": "increase(processor_runs_total[5m])", "refId": "A"}]
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["airq"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Air Quality Overview",
+  "uid": "airq-overview",
+  "version": 1
+}
