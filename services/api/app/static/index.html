@@ -3,146 +3,297 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Air Quality Comparison UI</title>
+  <title>Air Quality Monitoring BiH</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #f4f7fb;
-      --card: #ffffff;
-      --ink: #10243a;
-      --muted: #5f7288;
-      --fhmz: #1b8f6b;
-      --open: #1f5cff;
-      --delta: #d9480f;
-      --border: #dbe4ef;
+      --bg-1: #eef5ff;
+      --bg-2: #f9fbff;
+      --ink: #0f2038;
+      --muted: #5c6f87;
+      --card: rgba(255, 255, 255, 0.86);
+      --stroke: #d9e4f4;
+      --brand-1: #1362ff;
+      --brand-2: #2a86ff;
+      --shadow: 0 14px 40px rgba(19, 40, 78, 0.14);
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      font-family: "Segoe UI", Tahoma, sans-serif;
       color: var(--ink);
-      background: radial-gradient(circle at top right, #dce9ff 0%, var(--bg) 45%);
+      background:
+        radial-gradient(1200px 700px at -5% -15%, #d8ecff 10%, transparent 55%),
+        radial-gradient(1000px 680px at 110% -8%, #d5dcff 5%, transparent 45%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      min-height: 100vh;
     }
+
     .wrap {
-      max-width: 1200px;
-      margin: 28px auto;
-      padding: 0 16px;
+      width: min(1280px, 94vw);
+      margin: 26px auto 40px;
     }
+
+    .hero {
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 22px;
+      padding: 20px 24px;
+      background: linear-gradient(120deg, rgba(255,255,255,.9), rgba(255,255,255,.72));
+      backdrop-filter: blur(7px);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
     h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
+      margin: 0;
+      font: 800 36px/1.05 "Sora", sans-serif;
+      letter-spacing: -0.03em;
     }
+
     .sub {
-      margin: 0 0 20px;
+      margin: 8px 0 0;
       color: var(--muted);
+      font-size: 16px;
     }
+
     .controls, .card {
+      border: 1px solid var(--stroke);
+      border-radius: 18px;
       background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(16,36,58,0.08);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
     }
+
     .controls {
       display: grid;
-      grid-template-columns: repeat(6, minmax(120px, 1fr));
-      gap: 12px;
-      padding: 14px;
-      margin-bottom: 14px;
+      grid-template-columns: 1.1fr 1fr 1fr 1fr .95fr .85fr;
+      gap: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
     }
-    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+
+    label {
+      display: block;
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
     select, input, button {
       width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px;
-      font-size: 14px;
-      background: #fff;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      padding: 10px 12px;
+      font: 600 15px/1.2 "Manrope", sans-serif;
+      color: var(--ink);
+      background: rgba(255,255,255,.93);
     }
+
+    input:focus, select:focus {
+      outline: 2px solid rgba(33,117,255,.24);
+      border-color: #93bcff;
+    }
+
     button {
-      cursor: pointer;
-      background: linear-gradient(90deg, #164dcc, #3478ff);
-      color: #fff;
-      font-weight: 600;
-      border: none;
       margin-top: 18px;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(105deg, var(--brand-1), var(--brand-2));
+      box-shadow: 0 10px 20px rgba(29, 102, 255, .32);
+      transition: transform .14s ease, filter .14s ease;
     }
+
+    button:hover { transform: translateY(-1px); filter: brightness(1.02); }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      padding: 0 4px;
+      font-size: 13px;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 14px;
     }
-    .card { padding: 14px; }
-    .title { font-size: 18px; margin: 0 0 10px; }
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+
+    .card { padding: 16px; }
+
+    .title {
+      margin: 0;
+      font: 700 28px/1.1 "Sora", sans-serif;
+      letter-spacing: -0.02em;
     }
-    .mini {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px;
-      background: #f9fbff;
-    }
-    .mini .k { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
-    .mini .v { font-size: 22px; font-weight: 700; }
-    .mini .t { color: var(--muted); font-size: 12px; margin-top: 4px; }
-    .fhmz { color: var(--fhmz); }
-    .openm { color: var(--open); }
-    .delta { color: var(--delta); }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 8px;
-      font-size: 14px;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    th, td {
-      border-bottom: 1px solid var(--border);
-      padding: 10px;
-      text-align: left;
-      white-space: nowrap;
-    }
-    th {
-      background: #eef4ff;
-      color: #27425f;
-      font-weight: 600;
-    }
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 99px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .badge.fhmz { background: #e7f7f1; }
-    .badge.openm { background: #e8efff; }
-    .badge.delta { background: #fff0e9; }
-    .scroll { overflow-x: auto; }
-    .msg { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
-    .toolbar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
+
+    .kicker {
+      margin: 6px 0 12px;
       color: var(--muted);
       font-size: 13px;
     }
-    .toolbar select { width: auto; padding: 6px 10px; }
-    .hint { margin: 0 0 10px; color: var(--muted); font-size: 12px; }
-    @media (max-width: 900px) {
+
+    .gauge-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .gauge-card {
+      border: 1px solid var(--stroke);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,.88);
+      min-height: 315px;
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn .35s ease;
+    }
+
+    .gauge-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .gauge-name {
+      margin: 0;
+      font: 700 18px/1 "Sora", sans-serif;
+      letter-spacing: -0.01em;
+    }
+
+    .gauge-time {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .quality-pill {
+      width: fit-content;
+      margin: 0 auto 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font: 700 12px/1 "Sora", sans-serif;
+      color: #13243d;
+      border: 1px solid rgba(0,0,0,.06);
+      background: #f0f4fa;
+    }
+
+    .gauge-svg-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 235px;
+    }
+
+    .threshold-legend {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .th-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--stroke);
+      border-radius: 10px;
+      padding: 5px 7px;
+      font-size: 11px;
+      color: #264463;
+      background: rgba(255,255,255,.92);
+    }
+
+    .sw { width: 12px; height: 12px; border-radius: 4px; }
+
+    .table-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .scroll { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: rgba(255,255,255,.92);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid var(--stroke);
+      text-align: left;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    th {
+      background: #eaf2ff;
+      color: #234262;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    tr { animation: rowUp .3s ease; }
+
+    .val-f { color: #12805f; font-weight: 700; }
+    .val-o { color: #1a5eff; font-weight: 700; }
+    .val-d { color: #d24a0e; font-weight: 700; }
+
+    .msg {
+      margin: 8px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @keyframes rowUp {
+      from { transform: translateY(4px); opacity: .35; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: .2; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1050px) {
+      .controls { grid-template-columns: 1fr 1fr 1fr; }
+      .gauge-grid { grid-template-columns: 1fr; }
+      .threshold-legend { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 640px) {
       .controls { grid-template-columns: 1fr 1fr; }
-      .summary { grid-template-columns: 1fr; }
+      .threshold-legend { grid-template-columns: 1fr; }
+      h1 { font-size: 31px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Air Quality Monitoring BiH</h1>
-    <p class="sub">Broj-na-broj usporedba FHMZ i Open-Meteo podataka po gradu i polutantu.</p>
+    <section class="hero">
+      <h1>Air Quality Monitoring BiH</h1>
+      <p class="sub">Dual gauge prikaz za FHMZ i Open-Meteo sa oznacenim standard threshold zonama po polutantu.</p>
+    </section>
 
-    <div class="controls">
+    <section class="controls">
       <div>
         <label>Grad</label>
         <select id="city"></select>
@@ -167,7 +318,7 @@
         <input id="to" type="datetime-local" />
       </div>
       <div>
-        <button id="load">Osvjezi podatke</button>
+        <button id="load">Osvjezi i Snimi</button>
       </div>
       <div>
         <label>Auto refresh</label>
@@ -177,58 +328,117 @@
           <option value="300">5 min</option>
         </select>
       </div>
-    </div>
+    </section>
 
     <div class="toolbar">
       <label><input type="checkbox" id="autoRefresh" checked /> automatsko osvjezavanje</label>
       <span id="lastRefresh">Zadnje osvjezavanje: -</span>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <h3 class="title">Zadnji dostupni podaci</h3>
-        <div class="summary">
-          <div class="mini">
-            <div class="k">FHMZ</div>
-            <div class="v fhmz" id="latestFhmz">-</div>
-            <div class="t" id="latestFhmzTs">-</div>
+    <section class="grid">
+      <article class="card">
+        <h2 class="title">Live Threshold Gauges</h2>
+        <p class="kicker">Standard zone su prikazane direktno na speedometeru. Vrijednost je oznacena pointerom.</p>
+
+        <div class="gauge-grid">
+          <div class="gauge-card">
+            <div class="gauge-head">
+              <h3 class="gauge-name">FHMZ</h3>
+              <span class="gauge-time" id="fhmzTime">-</span>
+            </div>
+            <div class="quality-pill" id="fhmzQuality">-</div>
+            <div class="gauge-svg-wrap" id="fhmzGauge"></div>
           </div>
-          <div class="mini">
-            <div class="k">Open-Meteo</div>
-            <div class="v openm" id="latestOpen">-</div>
-            <div class="t" id="latestOpenTs">-</div>
-          </div>
-          <div class="mini">
-            <div class="k">Razlika |FHMZ - Open-Meteo|</div>
-            <div class="v delta" id="latestDelta">-</div>
-            <div class="t" id="latestDeltaTs">-</div>
+
+          <div class="gauge-card">
+            <div class="gauge-head">
+              <h3 class="gauge-name">Open-Meteo</h3>
+              <span class="gauge-time" id="openTime">-</span>
+            </div>
+            <div class="quality-pill" id="openQuality">-</div>
+            <div class="gauge-svg-wrap" id="openGauge"></div>
           </div>
         </div>
-      </div>
 
-      <div class="card">
-        <h3 class="title">Usporedba po osvjezavanju (jedan pored drugog)</h3>
-        <p class="hint">Tabela se puni na svako osvjezavanje. Vrijeme je lokalno (Europe/Sarajevo) sa sekundama.</p>
+        <div class="threshold-legend" id="thresholdLegend"></div>
+      </article>
+
+      <article class="card">
+        <div class="table-head">
+          <h2 class="title" style="font-size:24px">Historija Osvjezavanja</h2>
+          <span class="kicker" id="histStats">-</span>
+        </div>
         <div class="scroll">
           <table>
             <thead>
               <tr>
                 <th>Vrijeme osvjezavanja</th>
-                <th><span class="badge fhmz">FHMZ</span></th>
-                <th><span class="badge openm">Open-Meteo</span></th>
-                <th><span class="badge delta">Delta</span></th>
+                <th>FHMZ</th>
+                <th>Open-Meteo</th>
+                <th>Delta</th>
               </tr>
             </thead>
             <tbody id="rows"></tbody>
           </table>
         </div>
-      </div>
-    </div>
+      </article>
+    </section>
 
     <p class="msg" id="msg"></p>
   </div>
 
   <script>
+    const HEALTH_BANDS = {
+      "PM2.5": [
+        { min: 0.0, max: 12.0, label: "Good", color: "#2dc653" },
+        { min: 12.1, max: 35.4, label: "Moderate", color: "#e9c727" },
+        { min: 35.5, max: 55.4, label: "USG", color: "#ff8c00" },
+        { min: 55.5, max: 150.4, label: "Unhealthy", color: "#f52d2d" },
+        { min: 150.5, max: 250.4, label: "Very unhealthy", color: "#8f44ad" },
+        { min: 250.5, max: 500.0, label: "Hazardous", color: "#7d0022" }
+      ],
+      "PM10": [
+        { min: 0, max: 54, label: "Good", color: "#2dc653" },
+        { min: 55, max: 154, label: "Moderate", color: "#e9c727" },
+        { min: 155, max: 254, label: "USG", color: "#ff8c00" },
+        { min: 255, max: 354, label: "Unhealthy", color: "#f52d2d" },
+        { min: 355, max: 424, label: "Very unhealthy", color: "#8f44ad" },
+        { min: 425, max: 700, label: "Hazardous", color: "#7d0022" }
+      ],
+      "NO2": [
+        { min: 0, max: 40, label: "Good", color: "#70c4d4" },
+        { min: 40, max: 90, label: "Fair", color: "#73cf6a" },
+        { min: 90, max: 120, label: "Moderate", color: "#e8c229" },
+        { min: 120, max: 230, label: "Poor", color: "#f02746" },
+        { min: 230, max: 340, label: "Very poor", color: "#9f003f" },
+        { min: 340, max: 1000, label: "Extremely poor", color: "#5d317f" }
+      ],
+      "O3": [
+        { min: 0, max: 50, label: "Very good", color: "#3eb35e" },
+        { min: 50, max: 100, label: "Good", color: "#98cd40" },
+        { min: 100, max: 130, label: "Medium", color: "#e8c900" },
+        { min: 130, max: 240, label: "Poor", color: "#f5ab00" },
+        { min: 240, max: 380, label: "Very poor", color: "#ff8f00" },
+        { min: 380, max: 800, label: "Extremely poor", color: "#ff2700" }
+      ],
+      "SO2": [
+        { min: 0, max: 100, label: "Very good", color: "#3eb35e" },
+        { min: 100, max: 200, label: "Good", color: "#98cd40" },
+        { min: 200, max: 350, label: "Medium", color: "#e8c900" },
+        { min: 350, max: 500, label: "Poor", color: "#f5ab00" },
+        { min: 500, max: 750, label: "Very poor", color: "#ff8f00" },
+        { min: 750, max: 1250, label: "Extremely poor", color: "#ff2700" }
+      ],
+      "CO": [
+        { min: 0, max: 4000, label: "Very good", color: "#3eb35e" },
+        { min: 4000, max: 8000, label: "Good", color: "#98cd40" },
+        { min: 8000, max: 12000, label: "Medium", color: "#e8c900" },
+        { min: 12000, max: 20000, label: "Poor", color: "#f5ab00" },
+        { min: 20000, max: 30000, label: "Very poor", color: "#ff8f00" },
+        { min: 30000, max: 50000, label: "Extremely poor", color: "#ff2700" }
+      ]
+    };
+
     const citySel = document.getElementById('city');
     const polSel = document.getElementById('pollutant');
     const fromEl = document.getElementById('from');
@@ -239,12 +449,26 @@
     const autoRefreshEl = document.getElementById('autoRefresh');
     const refreshSecEl = document.getElementById('refreshSec');
     const lastRefreshEl = document.getElementById('lastRefresh');
+    const histStats = document.getElementById('histStats');
+
     let autoTimer = null;
     let loading = false;
 
     function toIsoLocal(d) {
       const pad = (n) => String(n).padStart(2, '0');
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function nowLocalString() {
+      return new Date().toLocaleString('bs-BA', {
+        hour12: false,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
     }
 
     function initDates() {
@@ -254,15 +478,15 @@
       toEl.value = toIsoLocal(now);
     }
 
-    function setLastRefresh() {
-      lastRefreshEl.textContent = `Zadnje osvjezavanje: ${new Date().toLocaleString('bs-BA', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-    }
-
     function syncWindowToNow(hoursBack = 24) {
       const now = new Date();
       const back = new Date(now.getTime() - hoursBack * 60 * 60 * 1000);
       fromEl.value = toIsoLocal(back);
       toEl.value = toIsoLocal(now);
+    }
+
+    function setLastRefresh() {
+      lastRefreshEl.textContent = `Zadnje osvjezavanje: ${nowLocalString()}`;
     }
 
     function fmtNum(n) {
@@ -284,47 +508,119 @@
       });
     }
 
-    function aggregateByHour(records) {
-      const by = {};
-      records.forEach((r) => {
-        if (r.value === null || r.value === undefined || r.value === '') return;
-        const k = r.measured_at;
-        by[k] = by[k] || { sum: 0, count: 0 };
-        by[k].sum += Number(r.value);
-        by[k].count += 1;
-      });
-      const out = {};
-      Object.entries(by).forEach(([k, v]) => {
-        out[k] = v.count ? v.sum / v.count : null;
-      });
-      return out;
+    function getBands(pollutant) {
+      return HEALTH_BANDS[pollutant] || HEALTH_BANDS['PM2.5'];
     }
 
-    function updateLatestCard(row) {
-      if (!row) {
-        document.getElementById('latestFhmz').textContent = '-';
-        document.getElementById('latestFhmzTs').textContent = '-';
-        document.getElementById('latestOpen').textContent = '-';
-        document.getElementById('latestOpenTs').textContent = '-';
-        document.getElementById('latestDelta').textContent = '-';
-        document.getElementById('latestDeltaTs').textContent = '-';
+    function classify(value, bands) {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) {
+        return { label: 'No data', color: '#e6edf8' };
+      }
+      const n = Number(value);
+      for (const b of bands) {
+        if (n >= b.min && n <= b.max) return { label: b.label, color: b.color };
+      }
+      return bands[bands.length - 1];
+    }
+
+    function hexToRgba(hex, alpha) {
+      const h = hex.replace('#', '');
+      const bigint = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function renderGauge(targetId, qualityId, timeId, value, ts, pollutant) {
+      const target = document.getElementById(targetId);
+      const qualityEl = document.getElementById(qualityId);
+      const timeEl = document.getElementById(timeId);
+      const bands = getBands(pollutant);
+      const max = bands[bands.length - 1].max;
+      const safeVal = (value === null || value === undefined || Number.isNaN(Number(value))) ? null : Number(value);
+      const q = classify(safeVal, bands);
+
+      qualityEl.textContent = q.label;
+      qualityEl.style.background = q.color;
+      timeEl.textContent = ts ? fmtTs(ts) : '-';
+      if (typeof Plotly === 'undefined') {
+        target.innerHTML = '<div style="color:#b42318;font-weight:700">Plotly nije ucitan.</div>';
         return;
       }
-      document.getElementById('latestFhmz').textContent = row.fhmz_value === null ? '-' : `${fmtNum(row.fhmz_value)} ug/m3`;
-      document.getElementById('latestFhmzTs').textContent = fmtTs(row.snapshot_at);
-      document.getElementById('latestOpen').textContent = row.openmeteo_value === null ? '-' : `${fmtNum(row.openmeteo_value)} ug/m3`;
-      document.getElementById('latestOpenTs').textContent = fmtTs(row.snapshot_at);
-      document.getElementById('latestDelta').textContent = row.delta_abs === null ? '-' : `${fmtNum(row.delta_abs)} ug/m3`;
-      document.getElementById('latestDeltaTs').textContent = fmtTs(row.snapshot_at);
+
+      const gaugeValue = safeVal === null ? 0 : Math.max(0, Math.min(safeVal, max));
+      const tickVals = [0, ...bands.map((b) => b.max)];
+      const steps = bands.map((b) => ({
+        range: [b.min, b.max],
+        color: hexToRgba(b.color, 0.42)
+      }));
+      const barColor = safeVal === null ? '#9aa9bd' : q.color;
+
+      const data = [{
+        type: 'indicator',
+        mode: 'gauge+number',
+        value: gaugeValue,
+        number: {
+          suffix: ' ug/m3',
+          font: { size: 40, color: '#122745', family: 'Sora' }
+        },
+        title: {
+          text: `<b>${pollutant}</b>`,
+          font: { size: 16, color: '#586f8f', family: 'Manrope' }
+        },
+        gauge: {
+          shape: 'angular',
+          axis: {
+            range: [0, max],
+            tickmode: 'array',
+            tickvals: tickVals,
+            tickfont: { size: 10, color: '#7087a5', family: 'Manrope' }
+          },
+          bar: { color: barColor, thickness: 0.26 },
+          bgcolor: '#edf3fc',
+          borderwidth: 0,
+          steps,
+          threshold: {
+            line: { color: '#0f2038', width: 5 },
+            thickness: 0.85,
+            value: gaugeValue
+          }
+        }
+      }];
+
+      const layout = {
+        margin: { l: 12, r: 12, t: 16, b: 0 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        height: 230
+      };
+
+      Plotly.react(target, data, layout, {
+        displayModeBar: false,
+        responsive: true,
+        staticPlot: false
+      });
+    }
+
+    function renderThresholdLegend(pollutant) {
+      const bands = getBands(pollutant);
+      const legend = document.getElementById('thresholdLegend');
+      legend.innerHTML = bands.map((b) => `
+        <div class="th-item">
+          <span class="sw" style="background:${b.color}"></span>
+          <span>${b.label}: ${b.min}-${b.max}</span>
+        </div>
+      `).join('');
     }
 
     function renderRows(rows) {
       rowsBody.innerHTML = rows.map((r) => `
         <tr>
           <td>${fmtTs(r.snapshot_at)}</td>
-          <td>${fmtNum(r.fhmz_value)}</td>
-          <td>${fmtNum(r.openmeteo_value)}</td>
-          <td>${fmtNum(r.delta_abs)}</td>
+          <td class="val-f">${fmtNum(r.fhmz_value)}</td>
+          <td class="val-o">${fmtNum(r.openmeteo_value)}</td>
+          <td class="val-d">${fmtNum(r.delta_abs)}</td>
         </tr>
       `).join('');
     }
@@ -335,45 +631,66 @@
       citySel.innerHTML = data.map(c => `<option value="${c.code}">${c.name} (${c.code})</option>`).join('');
     }
 
+    async function loadSnapshots(city, pollutant) {
+      const p = encodeURIComponent(pollutant);
+      const r = await fetch(`/api/v1/snapshots?city=${city}&pollutant=${p}&limit=240`);
+      return r.json();
+    }
+
+    async function captureSnapshot(city, pollutant, fromIso, toIso) {
+      await fetch('/api/v1/snapshots/capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city_code: city,
+          pollutant,
+          from_ts: fromIso,
+          to_ts: toIso
+        })
+      });
+    }
+
     async function loadData(capture = true) {
       if (loading) return;
       loading = true;
-      if (autoRefreshEl.checked) {
-        syncWindowToNow(24);
-      }
+
+      if (autoRefreshEl.checked) syncWindowToNow(24);
+
       const city = citySel.value;
-      const pollutantRaw = polSel.value;
-      const pollutant = encodeURIComponent(pollutantRaw);
-      const from = new Date(fromEl.value).toISOString();
-      const to = new Date(toEl.value).toISOString();
+      const pollutant = polSel.value;
+      const fromIso = new Date(fromEl.value).toISOString();
+      const toIso = new Date(toEl.value).toISOString();
 
       try {
+        renderThresholdLegend(pollutant);
+
         if (capture) {
-          await fetch('/api/v1/snapshots/capture', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              city_code: city,
-              pollutant: pollutantRaw,
-              from_ts: from,
-              to_ts: to
-            })
-          });
+          await captureSnapshot(city, pollutant, fromIso, toIso);
         }
 
-        const snapRes = await fetch(`/api/v1/snapshots?city=${city}&pollutant=${pollutant}&limit=200`);
-        const rows = await snapRes.json();
+        const rows = await loadSnapshots(city, pollutant);
+
         if (!rows.length) {
-          rowsBody.innerHTML = '<tr><td colspan="4">Nema snapshot podataka za odabrani grad/polutant.</td></tr>';
-          updateLatestCard(null);
-          msg.textContent = 'Nema snapshot podataka. Klikni Osvjezi ili cekaj auto refresh.';
+          rowsBody.innerHTML = '<tr><td colspan="4">Nema snapshot podataka. Klikni Osvjezi i Snimi.</td></tr>';
+          renderGauge('fhmzGauge', 'fhmzQuality', 'fhmzTime', null, null, pollutant);
+          renderGauge('openGauge', 'openQuality', 'openTime', null, null, pollutant);
+          histStats.textContent = '0 redova';
+          msg.textContent = 'Nema podataka za prikaz.';
           setLastRefresh();
           return;
         }
+
         renderRows(rows);
-        updateLatestCard(rows[0]);
-        msg.textContent = `Ucitanje uspjesno: snapshot redova ${rows.length}.`;
+        histStats.textContent = `${rows.length} redova`;
+
+        const latest = rows[0];
+        renderGauge('fhmzGauge', 'fhmzQuality', 'fhmzTime', latest.fhmz_value, latest.snapshot_at, pollutant);
+        renderGauge('openGauge', 'openQuality', 'openTime', latest.openmeteo_value, latest.snapshot_at, pollutant);
+
+        msg.textContent = `Ucitanje uspjesno: grad ${city}, polutant ${pollutant}, snapshot redova ${rows.length}.`;
         setLastRefresh();
+      } catch (err) {
+        msg.textContent = `Greska pri ucitavanju: ${String(err)}`;
       } finally {
         loading = false;
       }
@@ -383,7 +700,7 @@
       if (autoTimer) clearInterval(autoTimer);
       if (!autoRefreshEl.checked) return;
       const sec = Number(refreshSecEl.value || '60');
-      autoTimer = setInterval(loadData, sec * 1000);
+      autoTimer = setInterval(() => loadData(true), sec * 1000);
     }
 
     btn.addEventListener('click', () => loadData(true));
